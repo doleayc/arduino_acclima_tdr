@@ -1,0 +1,7 @@
+AquacheckSDI KEYWORD1
+Aquacheck485 KEYWORD1
+
+findAddress KEYWORD2
+getAddress KEYWORD2
+readHumidity KEYWORD2
+readTemperature KEYWORD2
