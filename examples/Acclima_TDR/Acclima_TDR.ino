@@ -35,7 +35,7 @@ void setup() {
     
     if(address == '?') {
       debugSerial.println(F("Unable to get"));
-      delay(1000);
+      delay(10000);
     }
     else {
       debugSerial.println(address);
@@ -43,7 +43,10 @@ void setup() {
   }while(address == '?');
 
   #if ENABLE_ACCLIMA_TDR_DEBUG == 1
-  acclimaTDR.getInfo(nullptr, 0);
+  char infoBuffer[50] = "";
+  acclimaTDR.getInfo(infoBuffer, sizeof(infoBuffer));
+  debugSerial.print("Info: ");
+  debugSerial.println(infoBuffer);
   #endif
   delay(1000);
 }

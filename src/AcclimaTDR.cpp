@@ -14,10 +14,10 @@
 #define FRAME_TERMINATOR "\r\n"
 #define FRAME_TERMINATOR_LENGTH (sizeof(FRAME_TERMINATOR) - 1) // Length of CRLF without '\0' terminator
 
-static const char * CMD_ASK_ADDRESS = "?";
-static const char * CMD_INFO = "I";
-static const char * CMD_READ_START = "M";
-static const char * CMD_READ_VALUES = "D0";
+static const char *CMD_ASK_ADDRESS = "?";
+static const char *CMD_INFO = "I";
+static const char *CMD_READ_START = "M";
+static const char *CMD_READ_VALUES = "D0";
 
 AcclimaTDR::AcclimaTDR(SDI12 &sdiInstance) : _sdi(sdiInstance)
 {
@@ -70,7 +70,7 @@ char AcclimaTDR::findAddress()
 void AcclimaTDR::getInfo(char *buffer, uint8_t size)
 {
     _sdi.begin();
-    _delay(300);
+    _delay(500);
 
     _sendCommand(CMD_INFO);
 
@@ -83,7 +83,6 @@ void AcclimaTDR::getInfo(char *buffer, uint8_t size)
 
     _sdi.end();
 }
-
 
 int AcclimaTDR::readValues(float *vol_water, float *temperature, float *permitivity, uint16_t *electrical_cond, uint16_t *pore_water)
 {
@@ -100,7 +99,7 @@ int AcclimaTDR::readValues(float *vol_water, float *temperature, float *permitiv
      * */
     _readLine();
 
-    if(_frameBuffer[0] != _address)
+    if (_frameBuffer[0] != _address)
     {
         return -1;
     }
@@ -114,32 +113,31 @@ int AcclimaTDR::readValues(float *vol_water, float *temperature, float *permitiv
     _sendCommand(CMD_READ_VALUES);
     _readLine();
 
-    if(strlen(_frameBuffer) < 1)
+    if (strlen(_frameBuffer) < 1)
     {
         return -2;
     }
-
 
     char *ptr = &_frameBuffer[1];
     float aux_f;
 
     aux_f = strtod(ptr, &ptr);
 
-    if(vol_water != nullptr)
+    if (vol_water != nullptr)
     {
         *vol_water = aux_f;
     }
 
     aux_f = strtod(ptr, &ptr);
 
-    if(temperature != nullptr)
+    if (temperature != nullptr)
     {
         *temperature = aux_f;
     }
 
     aux_f = strtod(ptr, &ptr);
 
-    if(permitivity != nullptr)
+    if (permitivity != nullptr)
     {
         *permitivity = aux_f;
     }
@@ -148,20 +146,19 @@ int AcclimaTDR::readValues(float *vol_water, float *temperature, float *permitiv
 
     aux_ul = strtoul(ptr, &ptr, 10);
 
-    if(electrical_cond != nullptr)
+    if (electrical_cond != nullptr)
     {
         *electrical_cond = aux_ul;
     }
 
     aux_ul = strtoul(ptr, &ptr, 10);
 
-    if(pore_water != nullptr)
+    if (pore_water != nullptr)
     {
         *pore_water = aux_ul;
     }
 
     return values_read;
-
 }
 
 /** 
@@ -230,10 +227,8 @@ int AcclimaTDR::_readByte(uint32_t timeout)
     do
     {
         c = _sdi.read();
-
         if (c >= 0)
         {
-            debugPrint((char)c);
             return c;
         }
 
@@ -254,14 +249,17 @@ size_t AcclimaTDR::_readBytesUntil(char terminator, char *buffer, size_t length,
     while (index < length)
     {
         int c = _readByte(timeout);
-
         if (c < 0 || c == terminator)
         {
             break;
         }
 
-        buffer[index] = static_cast<char>(c);
-        ++index;
+        // Skip null characters. Why sometimes sensor sent it?
+        if (c > 0)
+        {
+            buffer[index] = static_cast<char>(c);
+            ++index;
+        }
     }
 
     if (index < length)
@@ -282,7 +280,6 @@ size_t AcclimaTDR::_readLine(char *buffer, size_t size, uint32_t timeout)
     }
 
     buffer[len] = '\0';
-
     // Without this brief delay 485 probes aren't read well with 485 adapters... Why??
     _delay(50);
     return len;
